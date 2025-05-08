@@ -1,47 +1,78 @@
-import time
 import os
+import time
 import schedule
 from datetime import datetime
-from termux import TTS
 
-# ASCII Art
-ascii_art = """
+# ASCII Banner
+print("""
 __        __                     
-/ _\ __ _ / _|_      ____ _ _ __  
-\ \ / _` | |_\ \ /\ / / _` | '_ \ 
-_\ \ (_| |  _|\ V  V / (_| | | | |
-\__/\__,_|_|   \_/\_/ \__,_|_| |_|
-"""
+/ _\\ __ _ / _|_      ____ _ _ __  
+\\ \\ / _` | |_\\ \\ /\\ / / _` | '_ \\ 
+_\\ \\ (_| |  _|\\ V  V / (_| | | | |
+\\__/\\__,_|_|   \\_/\\_/ \\__,_|_| |_|
+""")
 
-print(ascii_art)
+# Voice Speak Function using termux-tts-speak
+def speak(text):
+    os.system(f'termux-tts-speak "{text}"')
 
-def play_audio(file_path):
-    os.system(f"termux-media-player play {file_path}")
-
-def wake_up_reminder():
-    TTS("আব্বু উঠো, তোমার অফিসের সময় হয়ে গেছে। ৯টা বেজে গেছে, উঠো আব্বু উঠোনা।")
-    play_audio("voice/abu_uTho.mp3")  # Add path to your audio file
+# Tasks
+def morning_wakeup():
+    speak("আব্বু উঠো, তোমার অফিসের সময় হয়ে গেছে, ৯টা বেজে গেছে। উঠো আব্বু উঠো না।")
 
 def breakfast_reminder():
-    TTS("ব্রেকফাস্ট করো আব্বু, সময় হয়ে গেছে।")
+    speak("আব্বু, সকাল ১০টা বাজে। এখন ব্রেকফাস্ট করে নাও।")
 
 def lunch_reminder():
-    TTS("লাঞ্চ করার সময় হয়েছে, ভালো করে খাও।")
+    speak("আব্বু, দুপুর ১টা বাজে। এবার লাঞ্চ করে ফেলো।")
 
-def bored_reminder():
-    TTS("বিরক্ত লাগতেছে? চল শোনো একটা গান!")
-    play_audio("voice/motivation_song.mp3")  # Replace with your desired audio file
+def evening_reminder():
+    speak("আব্বু, এখন বিকেল ৪টা। তোমার ছুটির সময়।")
 
-def street_food_reminder():
-    TTS("স্ট্রীট ফুড খাওয়ার কথা মনে আছে তো?")
+def play_music():
+    speak("তুমি বিরক্ত হয়ে আছো, তোমার জন্য গান চালাচ্ছি।")
+    os.system("termux-media-player play voice/motivation_song.mp3")
 
-# Scheduling Tasks
-schedule.every().day.at("09:00").do(wake_up_reminder)
+def random_street_food_tip():
+    speak("আজ বিকেলে কিছু স্ট্রিট ফুড খেয়ে ফেলো না দোস্ত!")
+
+# Schedule jobs
+schedule.every().day.at("09:00").do(morning_wakeup)
 schedule.every().day.at("10:00").do(breakfast_reminder)
 schedule.every().day.at("13:00").do(lunch_reminder)
-schedule.every().day.at("16:00").do(street_food_reminder)
-schedule.every().day.at("17:00").do(bored_reminder)  # Change based on mood
+schedule.every().day.at("16:00").do(evening_reminder)
+schedule.every().day.at("17:00").do(random_street_food_tip)
 
-while True:
-    schedule.run_pending()
-    time.sleep(60)
+# Custom command system
+def command_mode():
+    while True:
+        cmd = input("\nতোমার কথা বলো দোস্ত: ").lower()
+
+        if "বিরক্ত" in cmd or "birokto" in cmd:
+            play_music()
+        elif "গান" in cmd:
+            play_music()
+        elif "স্ট্রিট ফুড" in cmd:
+            random_street_food_tip()
+        elif "ঘুম" in cmd:
+            morning_wakeup()
+        elif "বন্ধু" in cmd:
+            speak("আমি সবসময় তোর পাশে আছি দোস্ত।")
+        elif "বেরিয়ে যা" in cmd or "exit" in cmd:
+            speak("আচ্ছা দোস্ত, দেখা হবে পরে।")
+            break
+        else:
+            speak("এই কমান্ডটা আমি বুঝিনি দোস্ত।")
+
+# Main loop
+if __name__ == "__main__":
+    speak("তোমার এসিস্ট্যান্ট চালু হয়েছে। Safwan বানিয়েছে এটা।")
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+        now = datetime.now()
+        if now.second % 30 == 0:
+            print(f"চলছে: {now.strftime('%H:%M:%S')}")
+        # Command mode entry shortcut (every 5 minutes)
+        if now.minute % 5 == 0 and now.second == 0:
+            command_mode()
