@@ -1,5 +1,3 @@
-DDos Black Attack v3.0
-
 Developer: Safwan Al-Sadaf
 
 Tool Type: Real HTTP Flooder (VPN Required)
