@@ -59,6 +59,5 @@ def main_menu():
     else:
         print("\n❌ Invalid option. Please enter 0-4.")
 
-# ====== START SCRIPT ======
 if __name__ == "__main__":
     main_menu()
